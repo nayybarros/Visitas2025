@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Resultados - Ano 2025</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8fbf8;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4e6d4 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(45, 90, 39, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(45, 90, 39, 0.25);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .metric-card:hover::before {
+            left: 100%;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2d5a27;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: #4a7c59;
+            font-weight: 500;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+            background: white;
+        }
+
+        .chart-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            color: #2d5a27;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .table-container {
+            margin: 30px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #4a7c59 0%, #2d5a27 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e8f5e8;
+        }
+
+        th {
+            background: #f0f8f0;
+            color: #2d5a27;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            color: #4a7c59;
+            font-weight: 500;
+        }
+
+        tr:hover td {
+            background: #f8fbf8;
+        }
+
+        .conversion-rate {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .rate-high { background: #2d5a27; }
+        .rate-medium { background: #4a7c59; }
+        .rate-low { background: #7faf7f; }
+
+        .total-row {
+            background: #f0f8f0 !important;
+            font-weight: bold !important;
+            border-top: 3px solid #4a7c59 !important;
+        }
+
+        .total-row td {
+            color: #2d5a27 !important;
+            font-weight: bold !important;
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                padding: 20px;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Dashboard de Resultados</h1>
+            <p>Análise de Performance - Ano 2025</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="total-visits">4.079</div>
+                <div class="metric-label">Visitas Totais</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="total-sales">1.261</div>
+                <div class="metric-label">Vendas Gerais</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="house-sales">204</div>
+                <div class="metric-label">Vendas HOUSE</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="imob-sales">992</div>
+                <div class="metric-label">Vendas IMOB</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="conversion-rate">31%</div>
+                <div class="metric-label">Conversão Geral</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="imob-performance">89%</div>
+                <div class="metric-label">Conversão IMOB</div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-title">Visitas por Canal</div>
+                <div class="chart-container">
+                    <canvas id="visitsChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Vendas por Canal</div>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h3>Detalhamento por Loja</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Loja</th>
+                        <th>Visitas Gerais</th>
+                        <th>Vendas Gerais</th>
+                        <th>Conv. %</th>
+                        <th>Visitas HOUSE</th>
+                        <th>Vendas HOUSE</th>
+                        <th>Conv. %</th>
+                        <th>Visitas IMOB</th>
+                        <th>Vendas IMOB</th>
+                        <th>Conv. %</th>
+                    </tr>
+                </thead>
+                <tbody id="storeTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Dados das lojas atualizados
+        const storeData = [
+            {name: "Loja Parangaba", visitasGeral: 2016, vendasGeral: 50, visitasHouse: 1725, vendasHouse: 35, visitasImob: 291, vendasImob: 15},
+            {name: "Loja Eusébio - Shopping Eusébio", visitasGeral: 0, vendasGeral: 0, visitasHouse: 0, vendasHouse: 0, visitasImob: 0, vendasImob: 0},
+            {name: "Loja Riomar", visitasGeral: 599, vendasGeral: 26, visitasHouse: 465, vendasHouse: 19, visitasImob: 134, vendasImob: 6},
+            {name: "Container Jóquei", visitasGeral: 242, vendasGeral: 9, visitasHouse: 190, vendasHouse: 6, visitasImob: 52, vendasImob: 3},
+            {name: "Loja Eusébio", visitasGeral: 379, vendasGeral: 36, visitasHouse: 126, vendasHouse: 7, visitasImob: 253, vendasImob: 29},
+            {name: "Loja Messejana", visitasGeral: 167, vendasGeral: 2, visitasHouse: 124, vendasHouse: 0, visitasImob: 43, vendasImob: 2},
+            {name: "Decorado Belvedere", visitasGeral: 185, vendasGeral: 10, visitasHouse: 69, vendasHouse: 4, visitasImob: 116, vendasImob: 6},
+            {name: "Container Eusébio", visitasGeral: 431, vendasGeral: 22, visitasHouse: 225, vendasHouse: 6, visitasImob: 206, vendasImob: 16},
+            {name: "Loja Santos Dumont", visitasGeral: 60, vendasGeral: 3, visitasHouse: 39, vendasHouse: 1, visitasImob: 21, vendasImob: 2},
+            {name: "Sem Visita Registrada", visitasGeral: 0, vendasGeral: 1103, visitasHouse: 0, vendasHouse: 126, visitasImob: 0, vendasImob: 913}
+        ];
+
+        // Função para calcular taxa de conversão
+        function calcConversion(vendas, visitas) {
+            if (visitas > 0) {
+                return Math.round((vendas / visitas) * 100) + '%';
+            } else if (vendas > 0 && visitas === 0) {
+                return 'N/A';
+            } else {
+                return '0%';
+            }
+        }
+
+        // Função para determinar classe CSS da taxa de conversão
+        function getConversionClass(rate) {
+            if (rate === 'N/A') return 'rate-medium';
+            const numRate = parseFloat(rate);
+            if (numRate >= 8) return 'rate-high';
+            if (numRate >= 5) return 'rate-medium';
+            return 'rate-low';
+        }
+
+        // Preencher tabela
+        function populateTable() {
+            const tbody = document.getElementById('storeTableBody');
+            tbody.innerHTML = '';
+            
+            // Calcular totais
+            let totalVisitasGeral = 0, totalVendasGeral = 0, totalVisitasHouse = 0, totalVendasHouse = 0, totalVisitasImob = 0, totalVendasImob = 0;
+            
+            storeData.forEach(store => {
+                const row = tbody.insertRow();
+                const convGeral = calcConversion(store.vendasGeral, store.visitasGeral);
+                const convHouse = calcConversion(store.vendasHouse, store.visitasHouse);
+                const convImob = calcConversion(store.vendasImob, store.visitasImob);
+                
+                row.innerHTML = `
+                    <td><strong>${store.name}</strong></td>
+                    <td>${store.visitasGeral.toLocaleString()}</td>
+                    <td>${store.vendasGeral}</td>
+                    <td><span class="conversion-rate ${getConversionClass(convGeral)}">${convGeral}</span></td>
+                    <td>${store.visitasHouse.toLocaleString()}</td>
+                    <td>${store.vendasHouse}</td>
+                    <td><span class="conversion-rate ${getConversionClass(convHouse)}">${convHouse}</span></td>
+                    <td>${store.visitasImob.toLocaleString()}</td>
+                    <td>${store.vendasImob}</td>
+                    <td><span class="conversion-rate ${getConversionClass(convImob)}">${convImob}</span></td>
+                `;
+                
+                // Somar totais
+                totalVisitasGeral += store.visitasGeral;
+                totalVendasGeral += store.vendasGeral;
+                totalVisitasHouse += store.visitasHouse;
+                totalVendasHouse += store.vendasHouse;
+                totalVisitasImob += store.visitasImob;
+                totalVendasImob += store.vendasImob;
+            });
+            
+            // Adicionar linha de totais com valores corretos
+            const totalRow = tbody.insertRow();
+            totalRow.className = 'total-row';
+            
+            // Cálculo correto dos percentuais
+            const totalConvGeral = Math.round((totalVendasGeral / totalVisitasGeral) * 100) + '%'; // 31%
+            const totalConvHouse = Math.round((totalVendasHouse / totalVisitasHouse) * 100) + '%'; // 7%
+            const totalConvImob = Math.round((totalVendasImob / totalVisitasImob) * 100) + '%'; // 89%
+            
+            totalRow.innerHTML = `
+                <td><strong>TOTAL GERAL</strong></td>
+                <td><strong>4.079</strong></td>
+                <td><strong>1.261</strong></td>
+                <td><span class="conversion-rate rate-high">31%</span></td>
+                <td><strong>2.963</strong></td>
+                <td><strong>204</strong></td>
+                <td><span class="conversion-rate rate-medium">7%</span></td>
+                <td><strong>1.116</strong></td>
+                <td><strong>992</strong></td>
+                <td><span class="conversion-rate rate-high">89%</span></td>
+            `;
+        }
+
+        // Configurar gráficos
+        const greenColors = {
+            darker: '#2d5a27',
+            dark: '#4a7c59',
+            medium: '#7faf7f'
+        };
+
+        // Gráfico de Visitas
+        const visitsCtx = document.getElementById('visitsChart').getContext('2d');
+        new Chart(visitsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Visitas Gerais', 'Visitas HOUSE', 'Visitas IMOB'],
+                datasets: [{
+                    data: [4079, 2963, 1116],
+                    backgroundColor: [greenColors.darker, greenColors.dark, greenColors.medium],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Vendas
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Vendas Gerais', 'Vendas HOUSE', 'Vendas IMOB'],
+                datasets: [{
+                    data: [1261, 204, 992],
+                    backgroundColor: [greenColors.darker, greenColors.dark, greenColors.medium],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(74, 124, 89, 0.1)'
+                        },
+                        ticks: {
+                            color: '#4a7c59',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#4a7c59',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animação de números
+        function animateNumber(element, finalNumber, suffix = '') {
+            let currentNumber = 0;
+            const increment = finalNumber / 50;
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= finalNumber) {
+                    element.textContent = finalNumber.toLocaleString() + suffix;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(currentNumber).toLocaleString() + suffix;
+                }
+            }, 30);
+        }
+
+        // Inicializar dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            populateTable();
+            
+            // Animar métricas
+            setTimeout(() => {
+                animateNumber(document.getElementById('total-visits'), 4079);
+                animateNumber(document.getElementById('total-sales'), 1261);
+                animateNumber(document.getElementById('house-sales'), 204);
+                animateNumber(document.getElementById('imob-sales'), 992);
+                animateNumber(document.getElementById('conversion-rate'), 31, '%');
+                animateNumber(document.getElementById('imob-performance'), 89, '%');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
